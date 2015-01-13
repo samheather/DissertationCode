@@ -1,0 +1,7 @@
+apt-get update
+apt-get upgrade
+apt-get dist-upgrade
+apt-get install git build-essential htop python-dev libev-dev cmake libssl-dev unzip cython libffi-dev screen libxml2-dev libxslt-dev vim
+ufw disable
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
