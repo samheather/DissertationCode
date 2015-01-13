@@ -1,0 +1,7 @@
+greenlet
+gevent
+gevent-websocket
+pymongo
+wsaccel
+ujson
+uuid
