@@ -1,38 +1,53 @@
 from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 from pymongo import MongoClient
-from uuid import uuid4
 import ujson
 
-app = Flask(__name__)
-
 client = MongoClient('localhost', 27017)
-db = client.pwdev
+db = client.dis
 users = db.users
-objects = db.objects
+wordReferencePairs = db.wordReferencePairs
 
 @app.route('/entry', methods=['POST'])
 def entry():
 	body = ujson.loads(request.data)
 	userNumber = body['userNumber']
+	question = body['question']
 	currentUser = users.find_one({'userNumber' : userNumber})
 	if (currentUser == None):
 		currentUser = newUser(userNumber)
-		
-	# TODO Get answer once discussed Wikipedia issue with Lilian
+	
+	# Find the correct page.
+
+	# Parse the page
+
+	# Parse the parsed object to the answer finder.
 	
 	return jsonify({'successful' : True, 'answer' : 'answer will go here'})
 	
 def newUser(cellNumber):
 	user['cellNumber'] = cellNumber
-	# TODO Global object ID below?
-	newUserObject = {'_id' : 0, 'history' : {}}
+	newUserObject = {'history' : {}}
 	users.insert(newUserObject)
 	return
 
-def wikiSearch():
+'''
+	Returns a wiki page with title matching the search term.
+'''
+def wikiSearch(searchTerm):
 	pass
 
+'''
+	Returns a dict containing a short description, and variables related to the input page
+	For example:
+		{'description' : 'London is an incredible city',
+		{'variables' :
+			{
+			'population' : 100,
+			'old name' : 'Londinium'
+			}
+		}
+'''
 def wikiParse():
 	pass
 
