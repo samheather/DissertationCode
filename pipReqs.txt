@@ -5,3 +5,5 @@ pymongo
 wsaccel
 ujson
 uuid
+twilio
+lxml
