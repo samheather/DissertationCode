@@ -3,6 +3,7 @@ import urllib2
 
 ''' returns a value between 0 and 1 indicating the similarity of the 2 input words'''
 def similarity(word1, word2):
+# 	print word1, " ----- ", word2
 	data = [
 		 { 
 			"text": word1

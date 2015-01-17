@@ -3,21 +3,51 @@
 
 import lxml.etree
 import urllib
+import wikipedia_utils
 
-title = "Aquamole Pot"
+import compare
 
-params = { 
-			"format":"xml",
-			"action":"query", 
-			"prop":"revisions",
-			"rvprop":"timestamp|user|comment|content"
-			}
+def removeWikiChars(input):
+	for c in '!@#${}|':
+		input = input.replace(c, '')
+	return input
+	
+def findArgumentOnPage(argument, page):
+	page = wikipedia_utils.GetWikipediaPage(page)
+	parsedPage = wikipedia_utils.ParseTemplates(page["text"])
+
+	# infobox_ukcave = dict(parsedPage["templates"]).get("Infobox cave")
+	# print infobox_ukcave
+
+	templates = dict(parsedPage["templates"])
+
+	infobox = None
+	for key in templates.keys():
+		if 'infobox' in key.lower():
+			infobox = templates.get(key)
+			break
+	
+	if (infobox == None):
+		print 'there was no infobox on this page!'
+		
+# 	print infobox
+
+	return removeWikiChars(matchAmbiguousArgumentToProperty(argument, infobox))
+
+def matchAmbiguousArgumentToProperty(argument, infobox):
+	for property in infobox:
+		if argument.lower() == str(property).lower():
+			return infobox[property]
+	
+	# Score the relatedness of each property against the argument and compare to the
+	# max so far.  If it is higher, store the key.
+	localMax = -1
+	currentMaxKey = None
+	for property in infobox:
+		similarityScore = compare.similarity(argument, str(property))
+		if (similarityScore > localMax):
+			localMax = similarityScore
+			currentMaxKey = property
 			
-params["titles"] = "API|%s" % urllib.quote(title.encode("utf8"))
-qs = "&".join("%s=%s" % (k, v)  for k, v in params.items())
-url = "http://en.wikipedia.org/w/api.php?%s" % qs
-tree = lxml.etree.parse(urllib.urlopen(url))
-revs = tree.xpath('//rev')
-
-print "The Wikipedia text for", title, "is"
-print revs[-1].text
+	# Now simply use the key with the largest similarity to retrieve the results
+	return infobox[currentMaxKey]
