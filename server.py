@@ -38,9 +38,11 @@ def entry():
 	elif (questionParam1.lower() == 'more'):
 		answer = "Not yet implemented"
 	elif (questionParam1.lower() == 'poor'):
-		if (currentUser.givenProperty != None) and (currentUser.returnedProperty != None)\
-		and (currentUser.receivedFeedback != False):
-			reduceRanking(givenProperty, returnedProperty)
+		lastQuestion = currentUser['lastQuestion']
+		if (lastQuestion['givenProperty'] != None)\
+		and (lastQuestion['returnedProperty'] != None)\
+		and (lastQuestion['receivedFeedback'] == False):
+			reduceRanking(lastQuestion['givenProperty'], lastQuestion['returnedProperty'])
 			currentUser['lastQuestion']['receivedFeedback'] = True
 			updateUser(currentUser)
 		answer = "Thank you for your feedback - it has been recorded."
@@ -88,7 +90,7 @@ def reduceRanking(givenProperty, returnedProperty):
 		# threads by two users asking the same question and providing feedback at the same
 		# time.
 		currentRankingDict['ranking'] = currentRankingDict['ranking']-1
-		wordReferencePairs.replace(queryDict,currentRankingDict)
+		wordReferencePairs.update(queryDict,currentRankingDict)
 	else:
 		queryDict['ranking'] = -1
 		wordReferencePairs.insert(queryDict)
