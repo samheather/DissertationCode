@@ -14,16 +14,17 @@ def removeWikiChars(input):
 	
 def findArgumentOnPage(argument, page):
 	page = wikipedia_utils.GetWikipediaPage(page)
+	# If unexpected block, below prints that block.
 	parsedPage = wikipedia_utils.ParseTemplates(page["text"])
 
 	# infobox_ukcave = dict(parsedPage["templates"]).get("Infobox cave")
 	# print infobox_ukcave
 
 	templates = dict(parsedPage["templates"])
-
+	
 	infobox = None
 	for key in templates.keys():
-		if 'infobox' in key.lower():
+		if 'box' in key.lower():
 			infobox = templates.get(key)
 			break
 	
@@ -45,9 +46,11 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	currentMaxKey = None
 	for property in infobox:
 		similarityScore = compare.similarity(argument, str(property))
+		print similarityScore, ' - ', argument, ' - ', property
 		if (similarityScore > localMax):
 			localMax = similarityScore
 			currentMaxKey = property
+	print 'max: ', currentMaxKey, ' with val: ', localMax
 			
 	# Now simply use the key with the largest similarity to retrieve the results
-	return infobox[currentMaxKey]
+	return infobox[currentMaxKey], currentMaxKey
