@@ -32,13 +32,13 @@ def findArgumentOnPage(argument, page):
 		print 'there was no infobox on this page!'
 		
 # 	print infobox
-
-	return removeWikiChars(matchAmbiguousArgumentToProperty(argument, infobox))
+	answer, propertyReturned = matchAmbiguousArgumentToProperty(argument, infobox)
+	return removeWikiChars(answer), propertyReturned
 
 def matchAmbiguousArgumentToProperty(argument, infobox):
 	for property in infobox:
 		if argument.lower() == str(property).lower():
-			return infobox[property]
+			return infobox[property], property
 	
 	# Score the relatedness of each property against the argument and compare to the
 	# max so far.  If it is higher, store the key.
