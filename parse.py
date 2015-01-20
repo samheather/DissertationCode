@@ -70,10 +70,10 @@ def adjustSimilarityWithRanking(similarity, argument, property):
 		return similarity * math.pow(1.05,abs(adjustment))
 	
 def getQualityMultiplier(argument, property):
-	wordReferencePairs.find_one({
+	pairEntry = wordReferencePairs.find_one({
 					'givenProperty' : argument,
 					'returnedProperty' : property
 				})
-	if (wordReferencePairs == None):
-		return None
-	return wordReferencePairs['ranking']
+	if (pairEntry == None):
+		return 0
+	return pairEntry['ranking']
