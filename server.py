@@ -77,7 +77,7 @@ def newUser(cellNumber):
 				}
 			}
 	users.insert(newUserObject)
-	return
+	return newUserObject
 	
 def reduceRanking(givenProperty, returnedProperty):
 	queryDict = {
