@@ -1,6 +1,3 @@
-# Based off information on:
-# https://blog.scraperwiki.com/2011/12/how-to-scrape-and-parse-wikipedia/
-
 import lxml.etree
 import urllib
 import wikipedia_utils
@@ -8,6 +5,8 @@ from pymongo import MongoClient
 import math
 
 import compare
+import dbpediaParser
+import wikiPageParser
 
 client = MongoClient('localhost', 27017)
 db = client.dis
@@ -19,23 +18,10 @@ def removeWikiChars(input):
 	return input
 	
 def findArgumentOnPage(argument, page):
-	page = wikipedia_utils.GetWikipediaPage(page)
-# 	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-# 	print page
-# 	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-	# If unexpected block, can print the below to view all blocks.
-	parsedPage = wikipedia_utils.ParseTemplates(page["text"])
 
-	templates = dict(parsedPage["templates"])
-	
-	infobox = None
-	for key in templates.keys():
-		if 'box' in key.lower():
-			infobox = templates.get(key)
-			break
-	
-	if (infobox == None):
-		print 'there was no infobox on this page!'
+	fromDbpedia = dbpediaParser.getInfobox(page)
+	fromWikiPage = wikiPageParser.getInfobox(page)
+	# pass both into matchAmbiguousArgumentsToProperty
 		
 	answer, propertyReturned = matchAmbiguousArgumentToProperty(argument, infobox)
 	return removeWikiChars(answer), propertyReturned

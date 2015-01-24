@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import ujson
 from flask import Flask, request, jsonify
 
-import parse
+import wikiPageParser
 
 # 7e2d62f74e4edd4b5fbf4d4c88ca86371b7d56f6
 
@@ -54,7 +54,7 @@ def entry():
 			updateUserWithLastQuestion(currentUser, questionParam1, None, None)
 		else:
 			# Find the answer, and retrieve the name of the property used.
-			answer, keyUsed = parse.findArgumentOnPage(questionParam2,questionParam1)
+			answer, keyUsed = wikiPageParser.findArgumentOnPage(questionParam2,questionParam1)
 			updateUserWithLastQuestion(currentUser, questionParam1, questionParam2, keyUsed)
 
 	return jsonify({'successful' : True, 'answer' : answer})
