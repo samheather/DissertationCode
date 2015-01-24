@@ -2,6 +2,7 @@ import urllib
 import wikipedia_utils
 from pymongo import MongoClient
 import math
+import re
 
 import compare
 import dbpediaParser
@@ -54,7 +55,8 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	localMax = -1.0
 	currentMaxKey = None
 	for property in infobox:
-		similarityScore = compare.similarity(argument, str(property))
+		# CamelCase not recognised as new words by similarity, snake_case is.
+		similarityScore = compare.similarity(argument, camelCaseToSnakeCase(str(property)))
 		similarityScore = adjustSimilarityWithRanking(similarityScore, argument, property)
 		print similarityScore, ' - ', argument, ' - ', property
 		# If this property has a higher semantic similarity AND is not None (implicit):
@@ -75,6 +77,8 @@ def adjustSimilarityWithRanking(similarity, argument, property):
 		return similarity * math.pow(0.95,abs(adjustment))
 	elif (adjustment > 0):
 		return similarity * math.pow(1.05,abs(adjustment))
+	else:
+		return similarity
 	
 def getQualityMultiplier(argument, property):
 	pairEntry = wordReferencePairs.find_one({
@@ -84,3 +88,8 @@ def getQualityMultiplier(argument, property):
 	if (pairEntry == None):
 		return 0
 	return pairEntry['ranking']
+	
+# From: http://stackoverflow.com/questions/1175208/
+def camelCaseToSnakeCase(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
