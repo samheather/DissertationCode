@@ -8,31 +8,36 @@ import compare
 import dbpediaParser
 import wikiPageParser
 
+# Setup Mongo
 client = MongoClient('localhost', 27017)
 db = client.dis
 wordReferencePairs = db.wordReferencePairs
 
+"""
+	wikiPageParser tends to return strings with additional formatting, which is not
+	needed.  This function removes these.
+"""
 def removeWikiChars(input):
 	for c in '!@#${}|':
 		input = input.replace(c, '')
 	return input
 	
+"""
+	Given a (potentially ambiguous) argument and a valid wikipedia page name, this returns
+	the value of that property and the name of the returned property.
+"""
 def findArgumentOnPage(argument, page):
-
-	# Sources (in priority order in list)
-	# TODO - neaten to 2 lines of code.
-	fromDbpedia = dbpediaParser.getInfobox(page)
-	fromWikiPage = wikiPageParser.getInfobox(page)
-	sources = [fromDbpedia, fromWikiPage]
+	# Sources (in priority order)
+	sources = [dbpediaParser.getInfobox(page), wikiPageParser.getInfobox(page)]
 	
+	# Preset answer, propertyReturned and the certainty - these are then set from
+	# iterating through the sources.
 	answer = None
 	propertyReturned = None
 	maxCertaintySoFar = -1.0
 	for source in sources:
 		localAnswer, localPropertyReturned, certainty = matchAmbiguousArgumentToProperty(
 			argument, source)
-		# TODO - test if answer is None - it shouldn't crash - just can't remember how
-		# python handles this.
 		if (certainty > maxCertaintySoFar):
 			answer = localAnswer
 			propertyReturned = localPropertyReturned
@@ -40,11 +45,19 @@ def findArgumentOnPage(argument, page):
 		if (maxCertaintySoFar == 1.0):
 			# DBPedia produced best result, 1.0 can't be beaten by other source, return
 			break
+	# No answer was found (certaintySoFar never raised above -1)
 	if (answer == None):
 		answer = "An answer to your question could not be found."
 	return removeWikiChars(answer), propertyReturned
 
+"""
+	Takes a requested parameter and an infobox, containing a list of keys. Returns the 
+	value, key and certainty of semantic match between the key in the infobox and the
+	 parameter you request from the infobox.
+"""
 def matchAmbiguousArgumentToProperty(argument, infobox):
+	# First look for a perfect match between the requested parameter and the parameters in
+	# the infoboxes.  If a match is found, return it with 100% semantic match certainty.
 	print infobox
 	for property in infobox:
 		if argument.lower() == str(property).lower():
@@ -55,7 +68,7 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	localMax = -1.0
 	currentMaxKey = None
 	for property in infobox:
-		# CamelCase not recognised as new words by similarity, snake_case is.
+		# CamelCase not recognised in compare.similarity(), but snake_case is, so convert!
 		similarityScore = compare.similarity(argument, camelCaseToSnakeCase(str(property)))
 		similarityScore = adjustSimilarityWithRanking(similarityScore, argument, property)
 		print similarityScore, ' - ', argument, ' - ', property
@@ -71,6 +84,7 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	# Now simply use the key with the largest similarity to retrieve the results
 	return infobox[currentMaxKey], currentMaxKey, localMax
 	
+""" TODO: Fill this in once the 5 star ranking system is complete """
 def adjustSimilarityWithRanking(similarity, argument, property):
 	adjustment = getQualityMultiplier(argument, property)
 	if (adjustment < 0):
@@ -79,7 +93,8 @@ def adjustSimilarityWithRanking(similarity, argument, property):
 		return similarity * math.pow(1.05,abs(adjustment))
 	else:
 		return similarity
-	
+
+""" TODO: Fill this in once the 5 star ranking system is complete """
 def getQualityMultiplier(argument, property):
 	pairEntry = wordReferencePairs.find_one({
 					'givenProperty' : argument,
@@ -90,6 +105,7 @@ def getQualityMultiplier(argument, property):
 	return pairEntry['ranking']
 	
 # From: http://stackoverflow.com/questions/1175208/
+# Required for semantic comparison of CamelCase keys in the infoboxes.
 def camelCaseToSnakeCase(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
