@@ -3,11 +3,14 @@ sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 
 def urlToKey(input):
 	return input.split('/')[-1]
+	
+def spaceToUnderscore(input):
+	return input.replace(" ", "_")
 
 def getInfobox(page):
 	sparql.setQuery("""
 		select ?p ?o where {
-	  dbpedia:London ?p ?o
+	  dbpedia:""" + spaceToUnderscore(page) + """ ?p ?o
 	  filter (strstarts(str(?p),str(dbpedia-owl:)) && 
 				(LANG(?o) = "" || LANGMATCHES(LANG(?o), "en")))
 	}
