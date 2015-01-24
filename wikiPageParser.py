@@ -1,6 +1,3 @@
-# Based off information on:
-# https://blog.scraperwiki.com/2011/12/how-to-scrape-and-parse-wikipedia/
-
 import lxml.etree
 # import urllib
 import wikipedia_utils
