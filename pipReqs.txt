@@ -8,3 +8,4 @@ uuid
 twilio
 lxml
 flask
+mwparserfromhell

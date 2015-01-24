@@ -20,6 +20,9 @@ def removeWikiChars(input):
 	
 def findArgumentOnPage(argument, page):
 	page = wikipedia_utils.GetWikipediaPage(page)
+	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+	print page
+	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 	# If unexpected block, below prints that block.
 	parsedPage = wikipedia_utils.ParseTemplates(page["text"])
 
