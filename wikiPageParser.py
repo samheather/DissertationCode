@@ -1,4 +1,3 @@
-import lxml.etree
 import wikipedia_utils
 	
 def getInfobox(page):

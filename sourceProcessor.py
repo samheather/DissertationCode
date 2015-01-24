@@ -1,4 +1,3 @@
-import lxml.etree
 import urllib
 import wikipedia_utils
 from pymongo import MongoClient
@@ -29,7 +28,6 @@ def findArgumentOnPage(argument, page):
 	propertyReturned = None
 	maxCertaintySoFar = -1.0
 	for source in sources:
-		print 'checking a source'
 		localAnswer, localPropertyReturned, certainty = matchAmbiguousArgumentToProperty(
 			argument, source)
 		# TODO - test if answer is None - it shouldn't crash - just can't remember how
