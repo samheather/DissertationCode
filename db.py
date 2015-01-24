@@ -1,10 +1,9 @@
 from SPARQLWrapper import SPARQLWrapper, JSON, XML, N3, RDF
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
-# sparql.setQuery("""
-#     SELECT ?label
-# 	WHERE { <http://dbpedia.org/resource/London>
-#             dbpedia-owl:wikiPageExternalLink ?label }
-# """)
+
+def urlToKey(input):
+	return input.split('/')[-1]
+
 sparql.setQuery("""
     select ?p ?o where {
   dbpedia:London ?p ?o
@@ -15,20 +14,17 @@ sparql.setQuery("""
 print '\n\n*** JSON Example'
 sparql.setReturnFormat(JSON)
 results = sparql.query().convert()
-print results["results"]["bindings"]
-# for result in results["results"]["bindings"]:
-#     print result["label"]["value"]
+# print results["results"]["bindings"]
 
+properties = {}
 
-# from SPARQLWrapper import SPARQLWrapper, JSON, XML, N3, RDF
-# sparql = SPARQLWrapper("http://dbpedia.org/sparql")
-# sparql.setQuery("""
-#     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-#     SELECT ?label
-#     WHERE { <http://en.dbpedia.org/resource/Asturias> rdfs:label ?label }
-# """)
-# print '\n\n*** JSON Example'
-# sparql.setReturnFormat(JSON)
-# results = sparql.query().convert()
-# for result in results["results"]["bindings"]:
-#     print result["label"]["value"]
+for result in results["results"]["bindings"]:
+	key = urlToKey(result['p']['value'])
+	value = result['o']['value']
+	properties[key] = value
+# 	print '\n\n\n\n'
+# 	print result
+# 	#["label"]["value"]
+
+for key in properties.keys():
+	print key, ' - ', properties[key]

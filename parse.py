@@ -20,14 +20,11 @@ def removeWikiChars(input):
 	
 def findArgumentOnPage(argument, page):
 	page = wikipedia_utils.GetWikipediaPage(page)
-	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-	print page
-	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-	# If unexpected block, below prints that block.
+# 	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+# 	print page
+# 	print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+	# If unexpected block, can print the below to view all blocks.
 	parsedPage = wikipedia_utils.ParseTemplates(page["text"])
-
-	# infobox_ukcave = dict(parsedPage["templates"]).get("Infobox cave")
-	# print infobox_ukcave
 
 	templates = dict(parsedPage["templates"])
 	
@@ -40,11 +37,11 @@ def findArgumentOnPage(argument, page):
 	if (infobox == None):
 		print 'there was no infobox on this page!'
 		
-# 	print infobox
 	answer, propertyReturned = matchAmbiguousArgumentToProperty(argument, infobox)
 	return removeWikiChars(answer), propertyReturned
 
 def matchAmbiguousArgumentToProperty(argument, infobox):
+	print infobox
 	for property in infobox:
 		if argument.lower() == str(property).lower():
 			return infobox[property], property
