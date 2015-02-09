@@ -15,6 +15,9 @@ db = client.dis
 users = db.users
 wordReferencePairs = db.wordReferencePairs
 
+ratingKeys = ["oneStarRatings", "twoStarRatings", "threeStarRatings", "fourStarRatings",
+	"fiveStarRatings"]
+
 """ Main function for the server - takes input question or command, returns an answer. """
 # Define the HTTP address to wait on
 @app.route('/entry', methods=['POST'])
@@ -41,21 +44,29 @@ def entry():
 					"sending 'poor'"
 	elif (questionParam1.lower() == 'more'):
 		answer = "Not yet implemented"
-	elif (questionParam1.lower() == 'poor'):
-		lastQuestion = currentUser['lastQuestion']
-		if (lastQuestion['givenProperty'] != None)\
-		and (lastQuestion['returnedProperty'] != None)\
-		and (lastQuestion['receivedFeedback'] == False):
-			reduceRanking(lastQuestion['givenProperty'], lastQuestion['returnedProperty'])
-			currentUser['lastQuestion']['receivedFeedback'] = True
-			updateUser(currentUser)
-		answer = "Thank you for your feedback - it has been recorded."
 	else:
 		# Second parameter needed
 		questionParam2 = body['questionParam2']
 		if (questionParam1.lower() == 'describe'):
 			answer = "Not yet implemented"
 			updateUserWithLastQuestion(currentUser, questionParam1, None, None)
+		elif (questionParam1.lower() == 'rate'):
+			lastQuestion = currentUser['lastQuestion']
+			if (lastQuestion['givenProperty'] != None)\
+			and (lastQuestion['returnedProperty'] != None)\
+			and (lastQuestion['receivedFeedback'] == False):
+				successful = reduceRanking(lastQuestion['givenProperty'],
+					lastQuestion['returnedProperty'],
+					questionParam2)
+				if (successful):
+					currentUser['lastQuestion']['receivedFeedback'] = True
+					updateUser(currentUser)
+					answer = "Thank you for your feedback - it has been recorded."
+				else:
+					# TODO Below is 5chars too long for 1msg of 160 chars
+					answer = "Feedback unrecognised. Send 'Rate' followed by a quality "\
+						"out of 5. For example, for a bad quality answer, send 'Rate 1' "\
+						"or for a good quality answer, send 'Rate 5'"
 		else:
 			# Find the answer, and retrieve the name of the property used.
 			answer, keyUsed = sourceProcessor.findArgumentOnPage(questionParam2,questionParam1)
@@ -91,8 +102,9 @@ def newUser(cellNumber):
 	return newUserObject
 	
 """ #TODO - Fill this in once 5 stars implemented.
+	Returns True/False for whether successfully parsed the rating.
 """
-def reduceRanking(givenProperty, returnedProperty):
+def reduceRanking(givenProperty, returnedProperty, fiveStarRating):
 	# Create the dictionary that we will query the DB to identify a pre-existing ranking,
 	# then query the database.
 	queryDict = {
@@ -101,16 +113,34 @@ def reduceRanking(givenProperty, returnedProperty):
 				}
 	currentRankingDict = wordReferencePairs.find_one(queryDict)
 	
+	fiveStarRatingKey = ratingToDictionaryKey(fiveStarRating)
+	if (ratingToDictionaryKey == False):
+		return False
+	# TODO: Potential race condition where chance may not be logged if executed on
+	# multiplethreads by two users asking the same question and providing feedback at
+	# the same time.
 	if currentRankingDict != None:
-		# TODO: Potential race condition where chance may not be logged if executed on
-		# multiplethreads by two users asking the same question and providing feedback at
-		# the same time.
-		currentRankingDict['ranking'] = currentRankingDict['ranking']-1
+		currentRankingDict[fiveStarRatingKey] = currentRankingDict[fiveStarRatingKey]+1
 		wordReferencePairs.update(queryDict,currentRankingDict)
 	else:
-		queryDict['ranking'] = -1
+		# Create the empty fields, populate one.
+		for i in range(0, 5):
+			if (i+1 == fiveStarRating):
+				queryDict[ratingKeys[i]] = 1
+			else:
+				queryDict[ratingKeys[i]] = 0
 		wordReferencePairs.insert(queryDict)
-	
+	return True
+
+'''
+	Transforms a star rating integer to the key that represents the rating in the DB
+'''
+def ratingToDictionaryKey(rating):
+	rating = int(rating)
+	if (rating < 1) or (rating > 5):
+		return False
+	else:
+		return ratingKeys[rating-1]
 
 ''' Replaces the given user in the database'''	
 def updateUser(user):

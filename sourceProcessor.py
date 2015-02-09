@@ -28,7 +28,7 @@ def removeWikiChars(input):
 """
 def findArgumentOnPage(argument, page):
 	# Sources (in priority order)
-	sources = [dbpediaParser.getInfobox(page), wikiPageParser.getInfobox(page)]
+	sources = [dbpediaParser.getInfobox(page)]#, wikiPageParser.getInfobox(page)]
 	
 	# Preset answer, propertyReturned and the certainty - these are then set from
 	# iterating through the sources.
@@ -87,12 +87,16 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 """ TODO: Fill this in once the 5 star ranking system is complete """
 def adjustSimilarityWithRanking(similarity, argument, property):
 	adjustment = getQualityMultiplier(argument, property)
-	if (adjustment < 0):
-		return similarity * math.pow(0.95,abs(adjustment))
-	elif (adjustment > 0):
-		return similarity * math.pow(1.05,abs(adjustment))
+	if (adjustment == None):
+		return similarity
 	else:
 		return similarity
+		# TODO - finish this
+		
+# 	if (adjustment < 0):
+# 		return similarity * math.pow(0.95,abs(adjustment))
+# 	elif (adjustment > 0):
+# 		return similarity * math.pow(1.05,abs(adjustment))
 
 """ TODO: Fill this in once the 5 star ranking system is complete """
 def getQualityMultiplier(argument, property):
@@ -101,7 +105,8 @@ def getQualityMultiplier(argument, property):
 					'returnedProperty' : property
 				})
 	if (pairEntry == None):
-		return 0
+		return None
+	# TODO - finish this
 	return pairEntry['ranking']
 	
 # From: http://stackoverflow.com/questions/1175208/
