@@ -3,6 +3,7 @@ import wikipedia_utils
 from pymongo import MongoClient
 import math
 import re
+import numpy
 
 import compare
 import dbpediaParser
@@ -12,6 +13,10 @@ import wikiPageParser
 client = MongoClient('localhost', 27017)
 db = client.dis
 wordReferencePairs = db.wordReferencePairs
+
+# TODO - remove this repetition from server.py:
+ratingKeys = ["oneStarRatings", "twoStarRatings", "threeStarRatings", "fourStarRatings",
+	"fiveStarRatings"]
 
 """
 	wikiPageParser tends to return strings with additional formatting, which is not
@@ -86,11 +91,29 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	
 """ TODO: Fill this in once the 5 star ranking system is complete """
 def adjustSimilarityWithRanking(similarity, argument, property):
-	adjustment = getQualityMultiplier(argument, property)
-	if (adjustment == None):
+	pairEntry = wordReferencePairs.find_one({
+					'givenProperty' : argument,
+					'returnedProperty' : property
+				})
+	if (pairEntry == None):
 		return similarity
 	else:
+		ratings = pairEntry['ratings']
+		ratings = removeOutliers(ratings)
+		ratings = compactRatings(ratings)
+		similarity = similarity * 
+			math.pow(0.95, ratings['oneStarRatings']) *
+			math.pow(0.98, ratings['twoStarRatings']) *
+			math.pow(1.00, ratings['threeStarRatings']) *
+			math.pow(1.02, ratings['fourStarRatings']) *
+			math.pow(1.05, ratings['fiveStarRatings'])
 		return similarity
+	
+# 	adjustment = getQualityMultiplier(argument, property)
+# 	if (adjustment == None):
+# 		return similarity
+# 	else:
+# 		return similarity
 		# TODO - finish this
 		
 # 	if (adjustment < 0):
@@ -109,8 +132,72 @@ def getQualityMultiplier(argument, property):
 	# TODO - finish this
 	return pairEntry['ranking']
 	
+def removeOutliers(input):
+	mean = numpy.mean(input)
+	standardDeviation = numpy.std(input)
+	minAcceptable = round(mean-standardDeviation)
+	maxAcceptable = round(mean+standardDeviation)
+	# remove entries in the list that are too small or too big - outliers
+	output = filter(lambda b: b >= minAcceptable, input)
+	output = filter(lambda b: b <= maxAcceptable, output)
+	return output
+	
+def compactRatings(input):
+	return {
+		'oneStarRatings':input.count(1),
+		'twoStarRatings':input.count(2),
+		'threeStarRatings':input.count(3),
+		'fourStarRatings':input.count(4),
+		'fiveStarRatings':input.count(5)
+	}
+	
 # From: http://stackoverflow.com/questions/1175208/
 # Required for semantic comparison of CamelCase keys in the infoboxes.
 def camelCaseToSnakeCase(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

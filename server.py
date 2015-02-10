@@ -118,11 +118,11 @@ def reduceRanking(givenProperty, returnedProperty, fiveStarRating):
 	# multiplethreads by two users asking the same question and providing feedback at
 	# the same time.
 	if currentRankingDict != None:
-		currentRankingDict[ratings] = currentRankingDict[ratings].append(fiveStarRatingInt)
+		currentRankingDict['ratings'] = currentRankingDict['ratings'].append(fiveStarRatingInt)
 		wordReferencePairs.update(queryDict,currentRankingDict)
 	else:
 		# Create the empty field, then populate
-		queryDict[ratings] = [fiveStarRatingInt]
+		queryDict['ratings'] = [fiveStarRatingInt]
 		wordReferencePairs.insert(queryDict)
 	return True
 
