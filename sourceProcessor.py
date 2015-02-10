@@ -109,29 +109,6 @@ def adjustSimilarityWithRanking(similarity, argument, property):
 			math.pow(1.05, ratings['fiveStarRatings'])
 		return similarity
 	
-# 	adjustment = getQualityMultiplier(argument, property)
-# 	if (adjustment == None):
-# 		return similarity
-# 	else:
-# 		return similarity
-		# TODO - finish this
-		
-# 	if (adjustment < 0):
-# 		return similarity * math.pow(0.95,abs(adjustment))
-# 	elif (adjustment > 0):
-# 		return similarity * math.pow(1.05,abs(adjustment))
-
-""" TODO: Fill this in once the 5 star ranking system is complete """
-def getQualityMultiplier(argument, property):
-	pairEntry = wordReferencePairs.find_one({
-					'givenProperty' : argument,
-					'returnedProperty' : property
-				})
-	if (pairEntry == None):
-		return None
-	# TODO - finish this
-	return pairEntry['ranking']
-	
 def removeOutliers(input):
 	mean = numpy.mean(input)
 	standardDeviation = numpy.std(input)
