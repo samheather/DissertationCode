@@ -15,9 +15,6 @@ db = client.dis
 users = db.users
 wordReferencePairs = db.wordReferencePairs
 
-ratingKeys = ["oneStarRatings", "twoStarRatings", "threeStarRatings", "fourStarRatings",
-	"fiveStarRatings"]
-
 """ Main function for the server - takes input question or command, returns an answer. """
 # Define the HTTP address to wait on
 @app.route('/entry', methods=['POST'])
@@ -113,34 +110,21 @@ def reduceRanking(givenProperty, returnedProperty, fiveStarRating):
 				}
 	currentRankingDict = wordReferencePairs.find_one(queryDict)
 	
-	fiveStarRatingKey = ratingToDictionaryKey(fiveStarRating)
-	if (ratingToDictionaryKey == False):
+	# Check the rating is in the valid range
+	fiveStarRatingInt = int(fiveStarRating)
+	if (fiveStarRatingInt < 1) or (fiveStarRatingInt > 5):
 		return False
 	# TODO: Potential race condition where chance may not be logged if executed on
 	# multiplethreads by two users asking the same question and providing feedback at
 	# the same time.
 	if currentRankingDict != None:
-		currentRankingDict[fiveStarRatingKey] = currentRankingDict[fiveStarRatingKey]+1
+		currentRankingDict[ratings] = currentRankingDict[ratings].append(fiveStarRatingInt)
 		wordReferencePairs.update(queryDict,currentRankingDict)
 	else:
-		# Create the empty fields, populate one.
-		for i in range(0, 5):
-			if (i+1 == fiveStarRating):
-				queryDict[ratingKeys[i]] = 1
-			else:
-				queryDict[ratingKeys[i]] = 0
+		# Create the empty field, then populate
+		queryDict[ratings] = [fiveStarRatingInt]
 		wordReferencePairs.insert(queryDict)
 	return True
-
-'''
-	Transforms a star rating integer to the key that represents the rating in the DB
-'''
-def ratingToDictionaryKey(rating):
-	rating = int(rating)
-	if (rating < 1) or (rating > 5):
-		return False
-	else:
-		return ratingKeys[rating-1]
 
 ''' Replaces the given user in the database'''	
 def updateUser(user):
