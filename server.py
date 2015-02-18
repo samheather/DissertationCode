@@ -64,6 +64,8 @@ def entry():
 					answer = "Feedback unrecognised. Send 'Rate' followed by a quality "\
 						"out of 5. For example, for a bad quality answer, send 'Rate 1' "\
 						"or for a good quality answer, send 'Rate 5'"
+			else:
+				answer = "Feedback already received or not expected for this question."
 		else:
 			# Find the answer, and retrieve the name of the property used.
 			answer, keyUsed = sourceProcessor.findArgumentOnPage(questionParam2,questionParam1)
@@ -118,7 +120,11 @@ def reduceRanking(givenProperty, returnedProperty, fiveStarRating):
 	# multiplethreads by two users asking the same question and providing feedback at
 	# the same time.
 	if currentRankingDict != None:
-		currentRankingDict['ratings'] = currentRankingDict['ratings'].append(fiveStarRatingInt)
+		print 'current ranking dict:'
+		print currentRankingDict['ratings']
+		currentRankingDict['ratings'].append(fiveStarRatingInt)
+		print 'current ranking dict, after append:'
+		print currentRankingDict['ratings']
 		wordReferencePairs.update(queryDict,currentRankingDict)
 	else:
 		# Create the empty field, then populate

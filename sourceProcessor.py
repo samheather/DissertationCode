@@ -89,7 +89,10 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	# Now simply use the key with the largest similarity to retrieve the results
 	return infobox[currentMaxKey], currentMaxKey, localMax
 	
-""" TODO: Fill this in once the 5 star ranking system is complete """
+""" 
+	Takes the requested argument and proposed property, adjusts if quality entires are
+	in the mongo database.  Outliers are detected and ignored.
+"""
 def adjustSimilarityWithRanking(similarity, argument, property):
 	pairEntry = wordReferencePairs.find_one({
 					'givenProperty' : argument,
@@ -101,14 +104,19 @@ def adjustSimilarityWithRanking(similarity, argument, property):
 		ratings = pairEntry['ratings']
 		ratings = removeOutliers(ratings)
 		ratings = compactRatings(ratings)
-		similarity = similarity * 
-			math.pow(0.95, ratings['oneStarRatings']) *
-			math.pow(0.98, ratings['twoStarRatings']) *
-			math.pow(1.00, ratings['threeStarRatings']) *
-			math.pow(1.02, ratings['fourStarRatings']) *
+		similarity = similarity * \
+			math.pow(0.95, ratings['oneStarRatings']) * \
+			math.pow(0.98, ratings['twoStarRatings']) * \
+			math.pow(1.00, ratings['threeStarRatings']) * \
+			math.pow(1.02, ratings['fourStarRatings']) * \
 			math.pow(1.05, ratings['fiveStarRatings'])
 		return similarity
 	
+"""
+	Takes an input list of integers and removes outliers by calculating the standard
+	deviation and mean, and then removing entries further from the mean than one
+	standard deviation.
+"""
 def removeOutliers(input):
 	mean = numpy.mean(input)
 	standardDeviation = numpy.std(input)
@@ -118,7 +126,10 @@ def removeOutliers(input):
 	output = filter(lambda b: b >= minAcceptable, input)
 	output = filter(lambda b: b <= maxAcceptable, output)
 	return output
-	
+
+"""
+	Takes a list of integers, counts integers 1..5, then returns dictionary of the counts
+"""
 def compactRatings(input):
 	return {
 		'oneStarRatings':input.count(1),
