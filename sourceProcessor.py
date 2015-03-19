@@ -2,7 +2,6 @@ import urllib
 import wikipedia_utils
 from pymongo import MongoClient
 import math
-import re
 import numpy
 
 import compare
@@ -13,6 +12,7 @@ import wikiPageParser
 client = MongoClient('localhost', 27017)
 db = client.dis
 wordReferencePairs = db.wordReferencePairs
+pastWholeQuestionRating = db.pastWholeQuestionRating
 
 # TODO - remove this repetition from server.py:
 ratingKeys = ["oneStarRatings", "twoStarRatings", "threeStarRatings", "fourStarRatings",
@@ -32,6 +32,12 @@ def removeWikiChars(input):
 	the value of that property and the name of the returned property.
 """
 def findArgumentOnPage(argument, page):
+	# Check if there was a past question with high rating and high semantic relatedness
+	pastQuestions = pastWholeQuestionRating.find({'rating':5})
+	for question in pastQuestions:
+		pass
+		
+
 	# Sources (in priority order)
 	sources = [dbpediaParser.getInfobox(page)]#, wikiPageParser.getInfobox(page)]
 	
@@ -48,10 +54,11 @@ def findArgumentOnPage(argument, page):
 			propertyReturned = localPropertyReturned
 			maxCertaintySoFar = certainty
 		if (maxCertaintySoFar == 1.0):
-			# DBPedia produced best result, 1.0 can't be beaten by other source, return
+			# First source (DBPedia) produced best result, 1.0 can't be beaten by other
+			# source, return
 			break
-	# No answer was found (certaintySoFar never raised above -1)
-	if (answer == None):
+	# No answer was found or no answer with certainty above 0.6 was found
+	if (answer == None) or (maxCertaintySoFar < 0.6):
 		answer = "An answer to your question could not be found."
 	return removeWikiChars(answer), propertyReturned
 
@@ -74,7 +81,7 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 	currentMaxKey = None
 	for property in infobox:
 		# CamelCase not recognised in compare.similarity(), but snake_case is, so convert!
-		similarityScore = compare.similarity(argument, camelCaseToSnakeCase(str(property)))
+		similarityScore = compare.similarityOfProperty(argument, str(property))
 		similarityScore = adjustSimilarityWithRanking(similarityScore, argument, property)
 		print similarityScore, ' - ', argument, ' - ', property
 		# If this property has a higher semantic similarity AND is not None (implicit):
@@ -138,12 +145,7 @@ def compactRatings(input):
 		'fourStarRatings':input.count(4),
 		'fiveStarRatings':input.count(5)
 	}
-	
-# From: http://stackoverflow.com/questions/1175208/
-# Required for semantic comparison of CamelCase keys in the infoboxes.
-def camelCaseToSnakeCase(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
 
 
 

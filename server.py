@@ -14,6 +14,7 @@ client = MongoClient('localhost', 27017)
 db = client.dis
 users = db.users
 wordReferencePairs = db.wordReferencePairs
+pastWholeQuestionRating = db.pastWholeQuestionRating
 
 """ Main function for the server - takes input question or command, returns an answer. """
 # Define the HTTP address to wait on
@@ -46,15 +47,20 @@ def entry():
 		questionParam2 = body['questionParam2']
 		if (questionParam1.lower() == 'describe'):
 			answer = "Not yet implemented"
-			updateUserWithLastQuestion(currentUser, questionParam1, None, None)
+			updateUserWithLastQuestion(currentUser, questionParam1, None, None, None)
 		elif (questionParam1.lower() == 'rate'):
 			lastQuestion = currentUser['lastQuestion']
 			if (lastQuestion['givenProperty'] != None)\
 			and (lastQuestion['returnedProperty'] != None)\
-			and (lastQuestion['receivedFeedback'] == False):
-				successful = reduceRanking(lastQuestion['givenProperty'],
-					lastQuestion['returnedProperty'],
-					questionParam2)
+			and (lastQuestion['receivedFeedback'] == False)\
+			and (lastQuestion['question'] == False)\
+			and (lastQuestion['answer'] == False):
+				successful = reduceRanking(
+								lastQuestion['question'],
+								lastQuestion['answer'],
+								lastQuestion['givenProperty'],
+								lastQuestion['returnedProperty'],
+								questionParam2)
 				if (successful):
 					currentUser['lastQuestion']['receivedFeedback'] = True
 					updateUser(currentUser)
@@ -69,7 +75,7 @@ def entry():
 		else:
 			# Find the answer, and retrieve the name of the property used.
 			answer, keyUsed = sourceProcessor.findArgumentOnPage(questionParam2,questionParam1)
-			updateUserWithLastQuestion(currentUser, questionParam1, questionParam2, keyUsed)
+			updateUserWithLastQuestion(currentUser, questionParam1, questionParam2, keyUsed, answer)
 
 	return jsonify({'successful' : True, 'answer' : answer})
 
@@ -78,12 +84,13 @@ def entry():
 	in the database, allowing for their next question to be based on the state of their 
 	previous question.
 """
-def updateUserWithLastQuestion(user, question, givenProperty, returnedProperty):
+def updateUserWithLastQuestion(user, question, givenProperty, returnedProperty, answer):
 	# Set the properties, and update the object in the DB.
 	user['lastQuestion']['text'] = question
 	user['lastQuestion']['givenProperty'] = givenProperty
 	user['lastQuestion']['returnedProperty'] = returnedProperty
 	user['lastQuestion']['receivedFeedback'] = False
+	user['lastQuestion']['answer'] = answer
 	updateUser(user)
 
 """ Creates a new, empty user with the input cellNumber and returns it."""
@@ -103,7 +110,17 @@ def newUser(cellNumber):
 """ #TODO - Fill this in once 5 stars implemented.
 	Returns True/False for whether successfully parsed the rating.
 """
-def reduceRanking(givenProperty, returnedProperty, fiveStarRating):
+def reduceRanking(question, answer, givenProperty, returnedProperty, fiveStarRating):
+	# Check the rating is in the valid range
+	fiveStarRatingInt = int(fiveStarRating)
+	if (fiveStarRatingInt < 1) or (fiveStarRatingInt > 5):
+		return False
+	
+	#Add to pastWholeQuestionRating
+	pastWholeQuestionRating.insert({'question':question,
+									'answer':answer,
+									'rating':int(fiveStarRating)})
+
 	# Create the dictionary that we will query the DB to identify a pre-existing ranking,
 	# then query the database.
 	queryDict = {
@@ -112,10 +129,6 @@ def reduceRanking(givenProperty, returnedProperty, fiveStarRating):
 				}
 	currentRankingDict = wordReferencePairs.find_one(queryDict)
 	
-	# Check the rating is in the valid range
-	fiveStarRatingInt = int(fiveStarRating)
-	if (fiveStarRatingInt < 1) or (fiveStarRatingInt > 5):
-		return False
 	# TODO: Potential race condition where chance may not be logged if executed on
 	# multiplethreads by two users asking the same question and providing feedback at
 	# the same time.
