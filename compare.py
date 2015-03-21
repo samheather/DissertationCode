@@ -62,7 +62,7 @@ def similarityOfProperty(word1,word2):
 	return sim
 
 def similarityOfQuestion(question1,question2):
-	return similarityDandelion(question1, question2, True)
+	return similarityDandelion(question1, question2, False)
 
 # From: http://stackoverflow.com/questions/1175208/
 # Required for semantic comparison of CamelCase keys in the infoboxes.
