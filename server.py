@@ -116,7 +116,7 @@ def reduceRanking(question, answer, givenProperty, returnedProperty, fiveStarRat
 	if (fiveStarRatingInt < 1) or (fiveStarRatingInt > 5):
 		return False
 	
-	#Add to pastWholeQuestionRating
+	# Add to pastWholeQuestionRating
 	pastWholeQuestionRating.insert({'question':question,
 									'answer':answer,
 									'rating':int(fiveStarRating)})

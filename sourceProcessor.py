@@ -58,7 +58,7 @@ def findArgumentOnPage(argument, page):
 			# source, return
 			break
 	# No answer was found or no answer with certainty above 0.6 was found
-	if (answer == None) or (maxCertaintySoFar < 0.6):
+	if (answer == None) or (maxCertaintySoFar <= 0.2):
 		answer = "An answer to your question could not be found."
 	return removeWikiChars(answer), propertyReturned
 
@@ -83,7 +83,6 @@ def matchAmbiguousArgumentToProperty(argument, infobox):
 		# CamelCase not recognised in compare.similarity(), but snake_case is, so convert!
 		similarityScore = compare.similarityOfProperty(argument, str(property))
 		similarityScore = adjustSimilarityWithRanking(similarityScore, argument, property)
-		print similarityScore, ' - ', argument, ' - ', property
 		# If this property has a higher semantic similarity AND is not None (implicit):
 		if (similarityScore > localMax):
 			localMax = similarityScore

@@ -47,16 +47,19 @@ def similarityDandelion(word1, word2, bow):
 
 	result = json.loads(requests.post(url, params=params, headers=headers).text)
 
-	print result
+# 	print result
 	return result['similarity']
 
 def similarityOfProperty(word1,word2):
 	word1 = camelCaseToSpace(word1)
 	word2 = camelCaseToSpace(word2)
 	if (len(word1.split(' ')) == 1) and (len(word2.split(' ')) == 1):
-		return similarityCortical(word1, word2)
+		sim = similarityCortical(word1, word2)
+		print 'cort', sim, ' - ', word1, ' - ', word2
 	else:
-		return similarityDandelion(word1, word2, True)
+		sim = similarityDandelion(word1, word2, True)
+		print 'dand', sim, ' - ', word1, ' - ', word2
+	return sim
 
 def similarityOfQuestion(question1,question2):
 	return similarityDandelion(question1, question2, True)
