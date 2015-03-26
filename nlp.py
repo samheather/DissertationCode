@@ -35,6 +35,8 @@ def nlp(workingQuestionString):
 
     # Identify the entity been queried about.
     place = extractEntities(workingQuestionString)
+    if (place['success'] = False):
+        return {'success': False}
     
     # Find the words in the question relating to the place and strip them.
     wordsToStrip = place['realName'].split(' ')
@@ -53,15 +55,18 @@ def nlp(workingQuestionString):
     # Re-join workingQuestionString
     workingQuestionString = "".join(workingQuestionString)
     
-    print 'Place: ', place['realName']
-    print 'Property: ', workingQuestionString
-    print '\n'
-    
+#     print 'Place: ', place['realName']
+#     print 'Property: ', workingQuestionString
+#     print '\n'
 
-print nlp('how tall is mount everest')
-print nlp('how long is the nile')
-print nlp('how deep is the deepest ocean')
-print nlp('what is the population of mexico city')
+    return {'place': place,
+            'property': workingQuestionString,
+            'success': True}
+
+# print nlp('how tall is mount everest')
+# print nlp('how long is the nile')
+# print nlp('how deep is the deepest ocean')
+# print nlp('what is the population of mexico city')
 
 # how tall is mount everest
 # how long is the nile
