@@ -68,7 +68,7 @@ def findArgumentOnPage(argument, page):
             # source, return
             break
     # No answer was found or no answer with certainty above 0.6 was found
-    if (answer == None) or (maxCertaintySoFar <= 0.2):
+    if (answer == None) or (maxCertaintySoFar <= 0.1):
         answer = "An answer to your question could not be found."
     return removeWikiChars(answer), propertyReturned
 

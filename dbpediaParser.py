@@ -23,20 +23,30 @@ def spaceToUnderscore(input):
 	infobox.
 """
 def getInfobox(page):
+    # Extract properties from DBpedia using the proerty prefix dbpedia-owl and dbpprop
+    firstProperties = generalGetInfoboxWithPrefix(page, 'dbpedia-owl')
+    secondProperties = generalGetInfoboxWithPrefix(page, 'dbpprop')
+    
+    # DBPedia-owl is more reliable (processed) than dbpprop, so when combining overwrite
+    # dbpprop entries with values from dbpedia-owl
+    properties = {}
+    properties.update(secondProperties)
+    properties.update(firstProperties)
+    
+    return properties
+	
+def generalGetInfoboxWithPrefix(page, prefix):
 	# Setup the query.
 	sparql.setQuery("""
 		select ?p ?o where {
 	  dbpedia:""" + spaceToUnderscore(page) + """ ?p ?o
-	  filter (strstarts(str(?p),str(dbpedia-owl:)) && 
+	  filter (strstarts(str(?p),str(""" + prefix + """:)) && 
 				(LANG(?o) = "" || LANGMATCHES(LANG(?o), "en")))
 	}
 	""")
 	sparql.setReturnFormat(JSON)
 	results = sparql.query().convert()
 	
-	# Print everything returned from DBPedia
-	#print results["results"]["bindings"]
-
 	# Setup the empty dictionary that we will be putting our processed, simplified,
 	# key-values in.
 	properties = {}
