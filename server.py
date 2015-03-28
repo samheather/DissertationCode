@@ -5,6 +5,7 @@ import ujson
 from flask import Flask, request, jsonify
 
 import sourceProcessor
+import nlp
 
 # Setup the application server
 app = Flask(__name__)
@@ -30,7 +31,7 @@ def entry():
 		currentUser = newUser(cellNumber)
 
     # Load the question text
-    question = body['question'].lower
+    question = body['question'].lower()
     
     # Check for 'help'
 	if (question.lower() == 'help'):
@@ -57,7 +58,7 @@ def entry():
                 "or for a good quality answer, send 'Rate 5'"
         
         # Check that the criteria for rating the previous question is good, then process
-        else if (lastQuestion['givenProperty'] != None)\
+        elif (lastQuestion['givenProperty'] != None)\
         and (lastQuestion['returnedProperty'] != None)\
         and (lastQuestion['receivedFeedback'] == False)\
         and (lastQuestion['question'] == False)\
@@ -78,58 +79,18 @@ def entry():
                     "or for a good quality answer, send 'Rate 5'"
         else:
             answer = "Feedback already received or not expected for this question."
-		
-		
-		
-		
-		
-	# TODO - comment this block when it's finalised with a single question field.
-	questionParam1 = body['questionParam1']
-	
-	if (questionParam1.lower() == 'help'):
-		answer =	"For a specific fact, ask a question like 'what is the population of"\
-					" London'\n" \
-					"For general information, ask for a description with 'describe "\
-					"London'\n" \
-					"If the contents is trimmed and you want more, send 'more'\n" \
-					"If an answer is of low quality, help improve the database by "\
-					"sending 'poor'"
-	elif (questionParam1.lower() == 'more'):
-		answer = "Not yet implemented"
 	else:
-		# Second parameter needed
-		questionParam2 = body['questionParam2']
-		if (questionParam1.lower() == 'describe'):
-			answer = "Not yet implemented"
-			updateUserWithLastQuestion(currentUser, questionParam1, None, None, None)
-		elif (questionParam1.lower() == 'rate'):
-			lastQuestion = currentUser['lastQuestion']
-			if (lastQuestion['givenProperty'] != None)\
-			and (lastQuestion['returnedProperty'] != None)\
-			and (lastQuestion['receivedFeedback'] == False)\
-			and (lastQuestion['question'] == False)\
-			and (lastQuestion['answer'] == False):
-				successful = reduceRanking(
-								lastQuestion['question'],
-								lastQuestion['answer'],
-								lastQuestion['givenProperty'],
-								lastQuestion['returnedProperty'],
-								questionParam2)
-				if (successful):
-					currentUser['lastQuestion']['receivedFeedback'] = True
-					updateUser(currentUser)
-					answer = "Thank you for your feedback - it has been recorded."
-				else:
-					# TODO Below is 5chars too long for 1msg of 160 chars
-					answer = "Feedback unrecognised. Send 'Rate' followed by a quality "\
-						"out of 5. For example, for a bad quality answer, send 'Rate 1' "\
-						"or for a good quality answer, send 'Rate 5'"
-			else:
-				answer = "Feedback already received or not expected for this question."
-		else:
-			# Find the answer, and retrieve the name of the property used.
-			answer, keyUsed = sourceProcessor.findArgumentOnPage(questionParam2,questionParam1)
-			updateUserWithLastQuestion(currentUser, questionParam1, questionParam2, keyUsed, answer)
+        # Process the natural language in the question
+        parsedQuestion = nlp.nlp(question)
+        if parsedQuestion['success'] = False:
+            answer = 'No answer was found'
+        else:
+            property = parsedQuestion['property']
+            placeDict = parsedQuestion['place']
+            wikiPlaceName = placeDict['wikiName']
+            realName = placeDict['realName']
+            answer, keyUsed = sourceProcessor.findArgumentOnPage(property,wikiPlaceName)
+            updateUserWithLastQuestion(currentUser, questionParam1, questionParam2, keyUsed, answer)
 
 	return jsonify({'successful' : True, 'answer' : answer})
 
