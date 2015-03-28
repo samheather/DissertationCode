@@ -28,6 +28,60 @@ def entry():
 	currentUser = users.find_one({'cellNumber' : cellNumber})
 	if (currentUser == None):
 		currentUser = newUser(cellNumber)
+
+    # Load the question text
+    question = body['question'].lower
+    
+    # Check for 'help'
+	if (question.lower() == 'help'):
+		answer =	"For a specific fact, ask a question like 'what is the population of"\
+					" London'\n" \
+					"For general information, ask for a description with 'describe "\
+					"London'\n" \
+					"If the contents is trimmed and you want more, send 'more'\n" \
+					"If an answer is of low quality, help improve the database by "\
+					"sending 'poor'"
+	elif (question.lower() == 'more'):
+		answer = "Not yet implemented"
+    elif ('rate' in quesiton):
+        lastQuestion = currentUser['lastQuestion']
+        
+        # Establish whether the rating is of the correct form
+        splitQuestion = question.split(' ')
+        if !(len(splitQuestion) == 2\
+        and splitQuestion[0] == 'rate'\
+        and splitQuestion[1].isdigit()\
+        and int(splitQuestion[1]) in range(1,6)):
+            answer = "Feedback unrecognised. Send 'Rate' followed by a quality "\
+                "out of 5. E.g, for a bad quality answer, send 'Rate 1' "\
+                "or for a good quality answer, send 'Rate 5'"
+        
+        # Check that the criteria for rating the previous question is good, then process
+        else if (lastQuestion['givenProperty'] != None)\
+        and (lastQuestion['returnedProperty'] != None)\
+        and (lastQuestion['receivedFeedback'] == False)\
+        and (lastQuestion['question'] == False)\
+        and (lastQuestion['answer'] == False):# TODO - this line and the line above - correct? False?!
+            successful = reduceRanking(
+                            lastQuestion['question'],
+                            lastQuestion['answer'],
+                            lastQuestion['givenProperty'],
+                            lastQuestion['returnedProperty'],
+                            questionParam2)
+            if (successful):
+                currentUser['lastQuestion']['receivedFeedback'] = True
+                updateUser(currentUser)
+                answer = "Thank you for your feedback - it has been recorded."
+            else:
+                answer = "Feedback unrecognised. Send 'Rate' followed by a quality "\
+                    "out of 5. E.g, for a bad quality answer, send 'Rate 1' "\
+                    "or for a good quality answer, send 'Rate 5'"
+        else:
+            answer = "Feedback already received or not expected for this question."
+		
+		
+		
+		
 		
 	# TODO - comment this block when it's finalised with a single question field.
 	questionParam1 = body['questionParam1']
