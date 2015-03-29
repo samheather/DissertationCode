@@ -49,7 +49,7 @@ def removeWikiChars(input):
 """
 def findArgumentOnPage(argument, page):
     # Sources (in priority order)
-    sources = [dbpediaParser.getInfobox(page)]#, wikiPageParser.getInfobox(page)]
+    sources = [dbpediaParser.getInfobox(page), wikiPageParser.getInfobox(page)]
     
     # Preset answer, propertyReturned and the certainty - these are then set from
     # iterating through the sources.

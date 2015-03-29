@@ -2,7 +2,8 @@ from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 from pymongo import MongoClient
 import ujson
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
+import twilio.twiml
 
 import sourceProcessor
 import nlp
@@ -17,13 +18,39 @@ users = db.users
 wordReferencePairs = db.wordReferencePairs
 pastWholeQuestionRating = db.pastWholeQuestionRating
 
+@app.route('/sms', methods=['GET', 'POST'])
+def sms():
+    # Establish the from number and the message body
+    from_number = request.values.get('From', None)
+    body = request.values.get('Body', None)
+    
+    # Print the from number and the message body
+    print from_number
+    print body
+    
+    body = {'cellNumber':from_number,
+            'question':body}
+            
+    answer = start(body)
+    
+    # Response
+    reply = answer
+ 
+    resp = twilio.twiml.Response()
+    resp.message(reply)
+ 
+    return str(resp)
+
 """ Main function for the server - takes input question or command, returns an answer. """
 # Define the HTTP address to wait on
 @app.route('/entry', methods=['POST'])
 def entry():
-    # Create dictionary from the input JSON.
     body = ujson.loads(request.data)
-    
+    answer = start(body)
+    return jsonify({'answer':answer})
+
+
+def start(body):  
     # Get the user, or create one if one does not exist.
     cellNumber = body['cellNumber']
     currentUser = users.find_one({'cellNumber' : cellNumber})
@@ -61,14 +88,14 @@ def entry():
         elif (lastQuestion['givenProperty'] != None)\
         and (lastQuestion['returnedProperty'] != None)\
         and (lastQuestion['receivedFeedback'] == False)\
-        and (lastQuestion['question'] == False)\
-        and (lastQuestion['answer'] == False):# TODO - this line and the line above - correct? False?!
+        and (lastQuestion['question'] != None)\
+        and (lastQuestion['answer'] != None):# TODO - this line and the line above - correct? False?!
             successful = reduceRanking(
                             lastQuestion['question'],
                             lastQuestion['answer'],
                             lastQuestion['givenProperty'],
                             lastQuestion['returnedProperty'],
-                            questionParam2)
+                            int(splitQuestion[1]))
             if (successful):
                 currentUser['lastQuestion']['receivedFeedback'] = True
                 updateUser(currentUser)
@@ -84,6 +111,7 @@ def entry():
         parsedQuestion = nlp.nlp(question)
         if parsedQuestion['success'] == False:
             answer = 'No answer was found'
+            print 'NLP Failed'
         else:
             property = parsedQuestion['property']
             placeDict = parsedQuestion['place']
@@ -93,7 +121,7 @@ def entry():
             answer, keyUsed = sourceProcessor.findArgumentOnPage(property,wikiPlaceName)
             updateUserWithLastQuestion(currentUser, wikiPlaceName, property, keyUsed, answer)
 
-    return jsonify({'successful' : True, 'answer' : answer})
+    return answer
 
 """ 
     Updates the user object for this user with the parameters from their last question
@@ -102,7 +130,7 @@ def entry():
 """
 def updateUserWithLastQuestion(user, question, givenProperty, returnedProperty, answer):
     # Set the properties, and update the object in the DB.
-    user['lastQuestion']['text'] = question
+    user['lastQuestion']['question'] = question
     user['lastQuestion']['givenProperty'] = givenProperty
     user['lastQuestion']['returnedProperty'] = returnedProperty
     user['lastQuestion']['receivedFeedback'] = False
