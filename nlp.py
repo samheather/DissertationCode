@@ -34,20 +34,10 @@ def extractEntities(inputText):
                             'success': True}
             break
     return outputPlace
-
-def nlp(workingQuestionString):
-    # Prepare the string by making all lower case and removing punctuation
-    workingQuestionString = workingQuestionString.lower()
-    for c in string.punctuation:
-        workingQuestionString = workingQuestionString.replace(c,"")
-
-    # Identify the entity been queried about.
-    place = extractEntities(workingQuestionString)
-    if (place['success'] == False):
-        return {'success': False}
     
+def stripToProperty(workingQuestionString, realPlaceName):
     # Find the words in the question relating to the place and strip them.
-    wordsToStrip = place['realName'].split(' ')
+    wordsToStrip = realPlaceName.split(' ')
     workingQuestionString = workingQuestionString.split(' ')
     for word in wordsToStrip:
         word = word.lower()
@@ -63,12 +53,29 @@ def nlp(workingQuestionString):
     # Re-join workingQuestionString
     workingQuestionString = "".join(workingQuestionString)
     
+    return workingQuestionString
+
+def nlp(workingQuestionString):
+    # Prepare the string by making all lower case and removing punctuation
+    workingQuestionString = workingQuestionString.lower()
+    for c in string.punctuation:
+        workingQuestionString = workingQuestionString.replace(c,"")
+
+    # Identify the entity been queried about.
+    place = extractEntities(workingQuestionString)
+    if (place['success'] == False):
+        return {'success': False}
+    
+    realPlaceName = place['realName']
+    
+    propertyString = stripToProperty(workingQuestionString, realPlaceName)
+    
     #print 'Place: ', place['realName']
     #print 'Property: ', workingQuestionString
     #print '\n'
 
     return {'place': place,
-            'property': workingQuestionString,
+            'property': propertyString,
             'success': True}
 
 # print nlp('how tall is mount everest')
