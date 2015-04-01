@@ -2,7 +2,7 @@ from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 from pymongo import MongoClient
 import ujson
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify
 import twilio.twiml
 
 import sourceProcessor
