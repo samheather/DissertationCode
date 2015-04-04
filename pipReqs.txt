@@ -1,8 +1,6 @@
 greenlet
 gevent
-gevent-websocket
 pymongo
-wsaccel
 ujson
 twilio
 lxml
