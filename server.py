@@ -1,4 +1,3 @@
-#from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 from pymongo import MongoClient
 import ujson
