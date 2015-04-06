@@ -6,13 +6,18 @@ from dandelionKey import getDandelionId
 
 """ returns a value between 0 and 1 indicating the similarity of the 2 input words"""
 def similarityCortical(word1, word2):
-      #print word1, " ----- ", word2
+    print word1, " ----- ", word2
+    key1 = "term"
+    key2 = "text"
+    if (len(key1.split(" "))>1):
+        print 'changing key1 to text'
+        key1 = "text"
     data = [
          { 
-            "term": word1
+            key1: word1
          },
          {
-            "text": word2
+            key2: word2
          }
     ]
 
@@ -57,12 +62,16 @@ def similarityDandelion(word1, word2, bow):
 def similarityOfProperty(word1,word2):
     word1 = camelCaseToSpace(word1)
     word2 = camelCaseToSpace(word2)
-    if (len(word1.split(' ')) == 1) and (len(word2.split(' ')) == 1):
-        sim = similarityCortical(word1, word2)
-        print 'cort', sim, ' - ', word1, ' - ', word2
-    else:
-        sim = similarityDandelion(word1, word2, True)
-        print 'dand', sim, ' - ', word1, ' - ', word2
+    
+    # Temporarily Force To Use Cortical
+    sim = similarityCortical(word1, word2)
+    print 'cort', sim, ' - ', word1, ' - ', word2
+#     if (len(word1.split(' ')) == 1) and (len(word2.split(' ')) == 1):
+#         sim = similarityCortical(word1, word2)
+#         print 'cort', sim, ' - ', word1, ' - ', word2
+#     else:
+#         sim = similarityDandelion(word1, word2, True)
+#         print 'dand', sim, ' - ', word1, ' - ', word2
     return sim
 
 def similarityOfQuestion(question1,question2):
