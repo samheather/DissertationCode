@@ -14,6 +14,8 @@ db = client.dis
 wordReferencePairs = db.wordReferencePairs
 pastWholeQuestionRating = db.pastWholeQuestionRating
 
+minThreshold = 0.2
+
 # TODO - remove this repetition from server.py:
 ratingKeys = ["oneStarRatings", "twoStarRatings", "threeStarRatings", "fourStarRatings",
     "fiveStarRatings"]
@@ -63,12 +65,12 @@ def findArgumentOnPage(argument, page):
             answer = localAnswer
             propertyReturned = localPropertyReturned
             maxCertaintySoFar = certainty
-        if (maxCertaintySoFar == 1.0):
-            # First source (DBPedia) produced best result, 1.0 can't be beaten by other
-            # source, return
+        if (maxCertaintySoFar > minThreshold):
+            # If a good result (above threshold_ has been found, break. 
+            # If not, as a last resort, try the second source (Wikipedia).
             break
     # No answer was found or no answer with certainty above 0.2 was found
-    if (answer == None) or (maxCertaintySoFar <= 0.2):
+    if (answer == None) or (maxCertaintySoFar <= minThreshold):
         answer = "An answer to your question could not be found."
     return removeWikiChars(answer), propertyReturned
 

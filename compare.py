@@ -34,7 +34,13 @@ def similarityCortical(word1, word2):
      #print json_data
      #print json_data['cosineSimilarity']
     return json_data['cosineSimilarity']
-    
+
+''' get similarity of text using the Dandelion API. 
+    word1 : first input text
+    word2 : second input text
+    bow :   FALSE -> Semantic Similarity,
+            True -> Syntactic Similarity
+'''
 def similarityDandelion(word1, word2, bow):
     if (not bow):
         bow_string = "never"
