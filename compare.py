@@ -63,15 +63,9 @@ def similarityOfProperty(word1,word2):
     word1 = camelCaseToSpace(word1)
     word2 = camelCaseToSpace(word2)
     
-    # Temporarily Force To Use Cortical
     sim = similarityCortical(word1, word2)
     print 'cort', sim, ' - ', word1, ' - ', word2
-#     if (len(word1.split(' ')) == 1) and (len(word2.split(' ')) == 1):
-#         sim = similarityCortical(word1, word2)
-#         print 'cort', sim, ' - ', word1, ' - ', word2
-#     else:
-#         sim = similarityDandelion(word1, word2, True)
-#         print 'dand', sim, ' - ', word1, ' - ', word2
+    
     return sim
 
 def similarityOfQuestion(question1,question2):
