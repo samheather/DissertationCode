@@ -20,6 +20,15 @@ minThreshold = 0.2
 ratingKeys = ["oneStarRatings", "twoStarRatings", "threeStarRatings", "fourStarRatings",
     "fiveStarRatings"]
 
+"""
+    Function takes a question text and searches all past questions for a semantically
+    very similar question with a high rating. If one is found, it is returned.
+    
+    This is an INCOMPLETE IMPLEMENTATION since just checking against a single rating
+    is not likely to return high quality results - multiple ratings should be used.
+    As such, this function IS NOT CURRENTLY USED in this application, but a variation may
+    be used in future versions.
+"""
 def checkPastQuestions(question):
     # Check if there was a past question with high rating and high semantic relatedness
     pastQuestions = pastWholeQuestionRating.find({'rating':5})
