@@ -4,6 +4,7 @@ import ujson
 from flask import Flask, request, jsonify
 import twilio.twiml
 import hashlib
+import time
 
 import sourceProcessor
 import nlp
@@ -38,8 +39,16 @@ def sms():
     # Response
     reply = answer
  
+    maxSmsLength = 1500
     resp = twilio.twiml.Response()
-    resp.message(reply)
+    if (len(reply) <= maxSmsLength):
+        resp.message(reply)
+    else:
+        splitAnswer = [reply[i:i+maxSmsLength] for i in range(0, len(reply), maxSmsLength)]
+        for s in splitAnswer:
+            print 'sending message'
+            resp.message(s)
+            time.sleep(2)
  
     return str(resp)
 
@@ -83,8 +92,6 @@ def start(body):
                     "If the contents is trimmed and you want more, send 'more'\n" \
                     "If an answer is of low quality, help improve the database by "\
                     "sending 'poor'"
-    elif (question.lower() == 'more'):
-        answer = "Not yet implemented"
     elif ('rate' in question):
         lastQuestion = currentUser['lastQuestion']
         

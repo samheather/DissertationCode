@@ -3,6 +3,7 @@ import wikipedia_utils
 from pymongo import MongoClient
 import math
 import numpy
+import unicodedata
 
 import compare
 import dbpediaParser
@@ -61,6 +62,13 @@ def removeWikiChars(input):
 def findArgumentOnPage(argument, page):
     # Sources (in priority order)
     sources = [dbpediaParser.getInfobox(page), wikiPageParser.getInfobox(page)]
+    
+    # Handle if the request is simply one for a description of the entity
+    if (argument == 'describe'):
+        # Transform Wikipedia Unicode characters to a close ASCII representation
+        abstractText = sources[0]['abstract']
+        convertedText = unicodedata.normalize('NFKD', abstractText).encode('ascii','ignore')
+        return convertedText, 'abstract'
     
     # Preset answer, propertyReturned and the certainty - these are then set from
     # iterating through the sources.
