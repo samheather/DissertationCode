@@ -3,6 +3,7 @@ from pymongo import MongoClient
 import ujson
 from flask import Flask, request, jsonify
 import twilio.twiml
+import hashlib
 
 import sourceProcessor
 import nlp
@@ -17,17 +18,19 @@ users = db.users
 wordReferencePairs = db.wordReferencePairs
 pastWholeQuestionRating = db.pastWholeQuestionRating
 
+# 512 bit salt
+constantSalt = 'ac0568f7c739f764723a68e523aa4cdb9fdec063de75a7a12f7c8b54e6675ceac62a472dc96f75d26fed168e0bcda710122c39130ad34c2b7d2f0971bf35734354c0386db9ac2642497f6d4f4b1eebb9c77bc3980519b08d7a7f2944cc43b05600f39b0639b3e8f3fb38d0ff1c09e31f7eadf35a84feaf0dc275536cc8310c41'
+
 @app.route('/sms', methods=['GET', 'POST'])
 def sms():
     # Establish the from number and the message body
     from_number = request.values.get('From', None)
     body = request.values.get('Body', None)
     
-    # Print the from number and the message body
-    print from_number
-    print body
+    # Hash the number
+    hashedNumber = hashNumber(from_number)
     
-    body = {'cellNumber':from_number,
+    body = {'cellNumber':hashedNumber,
             'question':body}
             
     answer = start(body)
@@ -44,9 +47,21 @@ def sms():
 # Define the HTTP address to wait on
 @app.route('/entry', methods=['POST'])
 def entry():
+    # Load the dictionary
     body = ujson.loads(request.data)
+    
+    # Hash the cell number
+    body['cellNumber'] = hashNumber(body['cellNumber'])
+    
+    # Get the answer and return it.
     answer = start(body)
     return jsonify({'answer':answer})
+
+def hashNumber(number):
+    number = constantSalt + number
+    hashed = hashlib.sha512(number).hexdigest()
+    
+    return hashed
 
 
 def start(body):  

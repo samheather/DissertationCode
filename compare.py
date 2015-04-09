@@ -27,7 +27,11 @@ def similarityCortical(word1, word2):
     req.add_header('api-key', '8c6fa2e0-9e56-11e4-9495-ad65fdcddb54')
 
     # Send the request, and parse the response into JSON
-    response = urllib2.urlopen(req, json.dumps(data))
+    try:
+        response = urllib2.urlopen(req, json.dumps(data))
+    except urllib2.HTTPError:
+        print 'HTTP error for these terms, returning 0'
+        return 0.0
     json_data = json.loads(response.read())
     
     # Extract and return the similarity value
@@ -66,8 +70,8 @@ def similarityDandelion(word1, word2, bow):
     return result['similarity']
 
 def similarityOfProperty(word1,word2):
-    word1 = camelCaseToSpace(word1)
-    word2 = camelCaseToSpace(word2)
+    word1 = spaceToSnakeCase(word1)
+    word2 = camelCaseToSnakeCase(word2)
     
     sim = similarityCortical(word1, word2)
     print 'cort', sim, ' - ', word1, ' - ', word2
@@ -76,6 +80,9 @@ def similarityOfProperty(word1,word2):
 
 def similarityOfQuestion(question1,question2):
     return similarityDandelion(question1, question2, False)
+
+def spaceToSnakeCase(name):
+    return name.replace(' ', '_')
 
 # From: http://stackoverflow.com/questions/1175208/
 # Required for semantic comparison of CamelCase keys in the infoboxes.
