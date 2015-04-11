@@ -28,13 +28,23 @@ def sms():
     from_number = request.values.get('From', None)
     body = request.values.get('Body', None)
     
+    f = open('logfile','w')
+    
     # Hash the number
     hashedNumber = hashNumber(from_number)
+
+    f.write(body)
+    f.write('\n')
     
     body = {'cellNumber':hashedNumber,
             'question':body}
             
     answer = start(body)
+    
+    f.write(answer)
+    f.write('\n')
+    
+    f.close()
     
     # Response
     reply = answer
@@ -59,11 +69,20 @@ def entry():
     # Load the dictionary
     body = ujson.loads(request.data)
     
+    f = open('logfile','w')
+    f.write(body['question'])
+    f.write('\n')
+    
     # Hash the cell number
     body['cellNumber'] = hashNumber(body['cellNumber'])
     
     # Get the answer and return it.
     answer = start(body)
+    
+    f.write(answer)
+    f.write('\n')
+    f.close()
+    
     return jsonify({'answer':answer})
 
 def hashNumber(number):
