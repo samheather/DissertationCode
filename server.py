@@ -181,7 +181,6 @@ def updateUserWithLastQuestion(user, question, givenProperty, returnedProperty, 
 def newUser(cellNumber):
     newUserObject = {
             'cellNumber' : cellNumber,
-            'history' : [],
             'lastQuestion' : {
                 'text' : None,
                 'givenProperty' : None,
