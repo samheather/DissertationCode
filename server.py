@@ -28,7 +28,7 @@ def sms():
     from_number = request.values.get('From', None)
     body = request.values.get('Body', None)
     
-    f = open('logfile','w')
+    f = open('logfile','a')
     
     # Hash the number
     hashedNumber = hashNumber(from_number)
@@ -69,7 +69,7 @@ def entry():
     # Load the dictionary
     body = ujson.loads(request.data)
     
-    f = open('logfile','w')
+    f = open('logfile','a')
     f.write(body['question'])
     f.write('\n')
     
