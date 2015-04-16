@@ -130,7 +130,7 @@ def start(body):
         and (lastQuestion['receivedFeedback'] == False)\
         and (lastQuestion['question'] != None)\
         and (lastQuestion['answer'] != None):# TODO - this line and the line above - correct? False?!
-            successful = reduceRanking(
+            successful = adjustRanking(
                             lastQuestion['question'],
                             lastQuestion['answer'],
                             lastQuestion['givenProperty'],
@@ -193,7 +193,7 @@ def newUser(cellNumber):
 """ #TODO - Fill this in once 5 stars implemented.
     Returns True/False for whether successfully parsed the rating.
 """
-def reduceRanking(question, answer, givenProperty, returnedProperty, fiveStarRating):
+def adjustRanking(question, answer, givenProperty, returnedProperty, fiveStarRating):
     # Check the rating is in the valid range
     fiveStarRatingInt = int(fiveStarRating)
     if (fiveStarRatingInt < 1) or (fiveStarRatingInt > 5):
